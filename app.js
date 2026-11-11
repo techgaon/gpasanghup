@@ -11,7 +11,9 @@ const LOCAL = /^(localhost|127\.0\.0\.1|)$/.test(location.hostname) || /[?&]loca
 const OTP = '1234';
 const FEE = 600;
 const DEF = { // first-run defaults (can be changed from the state login)
-  state_president: { name: 'डॉ. प्रदीप सिंह', nameEn: 'Dr. Pradeep Singh', mobile: '9415892666' },
+  state_president: { name: 'डॉ. प्रदीप सिंह', nameEn: 'Dr. Pradeep Singh', mobile: '9415892666',
+    msg: 'प्रदेश के सभी ग्राम पंचायत अधिकारी साथियों को सादर नमस्कार। संघ का एकमात्र लक्ष्य है — हर साथी की समस्या का समाधान और संवर्ग की न्यायोचित माँगों को शासन तक मज़बूती से पहुँचाना। शैक्षिक अर्हता, वेतनमान, पदोन्नति और कार्य-सुविधाओं से जुड़ी हमारी माँगों पर संघ निरंतर संघर्षरत है। आप सब एकजुट रहें, संगठन से जुड़े रहें — आपकी एकता ही हमारी शक्ति है।',
+    msgEn: 'Warm greetings to all Gram Panchayat Adhikari colleagues of the state. The Sangh has one goal — to resolve every colleague’s problems and to take the just demands of our cadre firmly to the Government. We are working continuously on our demands on educational qualification, pay scale, promotion and working facilities. Stay united and stay connected with the organisation — your unity is our strength.' },
   state_secretary: { name: 'नागेंद्र प्रताप कुशवाहा', nameEn: 'Nagendra Pratap Kushwaha', mobile: '' },
   state_treasurer: { name: '', mobile: '' },
   dp_BARABANKI: { name: 'अभय शुक्ला', nameEn: 'Abhay Shukla', mobile: '9415213754' },

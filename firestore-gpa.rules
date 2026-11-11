@@ -1,0 +1,57 @@
+    // ===== UP Gram Panchayat Adhikari Sangh (techgaon.in/gpasanghup) =====
+    function gpaMob() {
+      return request.auth != null && request.auth.token.get('email', '').matches('^91[0-9]{10}@gpasangh[.]techgaon[.]in$')
+        ? request.auth.token.email.split('@')[0].substring(2, 12) : 'none';
+    }
+    function gpaRole() { return get(/databases/$(database)/documents/gpaRoles/$(gpaMob())).data; }
+    function gpaHasRole() { return gpaMob() != 'none' && exists(/databases/$(database)/documents/gpaRoles/$(gpaMob())); }
+    function gpaState() { return gpaMob() == '9415892666' || (gpaHasRole() && gpaRole().role == 'state'); }
+    function gpaDp(d) { return (gpaMob() == '9415213754' && d == 'BARABANKI') || (gpaHasRole() && gpaRole().role == 'dp' && gpaRole().district == d); }
+    function gpaDpKey(k) { return (gpaMob() == '9415213754' && k == 'dp_BARABANKI') || (gpaHasRole() && gpaRole().role == 'dp' && gpaRole().key == k); }
+    function gpaIn() { return gpaMob() != 'none'; }
+
+    match /gpaConfig/{id} { allow read: if true; allow write: if gpaState(); }
+    match /gpaGallery/{id} { allow read: if true; allow write: if gpaState(); }
+    match /gpaOfficers/{key} {
+      allow read: if true;
+      allow write: if gpaState();
+      // a district president may save his own UPI / QR, never another number
+      allow create, update: if gpaDpKey(key) && request.resource.data.get('mobile', gpaMob()) == gpaMob();
+    }
+    match /gpaRoles/{mob} { allow read: if gpaIn(); allow write: if gpaState(); }
+    match /gpaMembers/{mob} {
+      allow get: if true;   // login screen looks the number up
+      allow list: if gpaState() || (gpaIn() && resource.data.district != null && gpaDp(resource.data.district));
+      allow create: if gpaDp(request.resource.data.district) || (mob == '9129203268' && gpaMob() == mob);
+      allow update: if gpaDp(resource.data.district) && gpaDp(request.resource.data.district);
+      allow delete: if gpaState() || gpaDp(resource.data.district);
+    }
+    match /gpaLevies/{id} { allow read: if gpaIn(); allow write: if gpaState(); }
+    match /gpaPayments/{id} {
+      allow read: if gpaState() || resource.data.mobile == gpaMob() || gpaDp(resource.data.district);
+      allow create, update: if (request.resource.data.mobile == gpaMob() && id.matches('^' + gpaMob() + '_.*')
+                                 && request.resource.data.status == 'claimed'
+                                 && (resource == null || resource.data.status != 'verified'))
+                            || (resource != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'verifiedBy', 'verifiedMs'])
+                                 && ((resource.data.kind == 'district' && gpaDp(resource.data.district)) || (resource.data.kind == 'state' && gpaState())));
+    }
+    match /gpaProofs/{id} {
+      allow read: if gpaState() || resource.data.mobile == gpaMob() || gpaDp(resource.data.district);
+      allow create, update: if request.resource.data.mobile == gpaMob() && id.matches('^' + gpaMob() + '_.*');
+    }
+    match /gpaMessages/{id} {
+      allow read: if gpaIn();
+      allow create: if request.resource.data.by == gpaMob()
+                    && ((request.resource.data.district == 'STATE' && gpaState()) || gpaDp(request.resource.data.district));
+      allow delete: if gpaState() || gpaDp(resource.data.district);
+    }
+    match /gpaDocs/{id} {
+      allow read: if gpaState() || gpaDp(resource.data.district);
+      allow create: if gpaDp(request.resource.data.district);
+      allow delete: if gpaState() || gpaDp(resource.data.district);
+    }
+    match /gpaDocChunks/{id} {
+      allow read: if gpaState() || gpaDp(resource.data.district);
+      allow create: if gpaDp(request.resource.data.district);
+      allow delete: if gpaState() || gpaDp(resource.data.district);
+    }
